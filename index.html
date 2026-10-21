@@ -1,0 +1,1242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play &amp; Create Portal</title>
+<meta name="description" content="Free family-friendly browser games and a text-to-image studio.">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--muted:#5b667a;--accent:#4f46e5;--accent2:#e0e7ff;--line:#e3e6ef}
+@media (prefers-color-scheme:dark){:root{--bg:#121520;--card:#1b2030;--ink:#eef1f8;--muted:#9aa5bb;--accent:#818cf8;--accent2:#2a3050;--line:#2c3350}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+header,main,footer{max-width:980px;margin:0 auto;padding:16px}
+header h1{margin:0;font-size:1.5rem}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:12px 0}
+nav button,.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 14px;border-radius:10px;font-size:1rem;cursor:pointer}
+nav button[aria-selected="true"],.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+section.panel{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+section.panel.active{display:block}
+h2{margin-top:0}
+textarea,input[type=text],select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:1rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.row>*{flex:1 1 140px}
+.result img{max-width:100%;border-radius:12px;margin-top:10px}
+.status{color:var(--muted);font-size:.95rem;min-height:1.4em}
+.grid{display:grid;gap:8px}
+.mem{grid-template-columns:repeat(4,1fr);max-width:420px}
+.mem button{aspect-ratio:1;font-size:2rem;border-radius:12px;border:1px solid var(--line);background:var(--accent2);color:var(--ink);cursor:pointer}
+.mem button.open,.mem button.done{background:var(--card)}
+.mem button.done{opacity:.55}
+.slide{grid-template-columns:repeat(3,1fr);max-width:300px}
+.slide button{aspect-ratio:1;font-size:1.8rem;border-radius:12px;border:1px solid var(--line);background:var(--accent2);color:var(--ink);cursor:pointer}
+.slide button.empty{background:transparent;border-style:dashed}
+.q{font-size:2rem;margin:8px 0}
+.ad{margin:16px 0;text-align:center;min-height:90px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:.8rem;padding:4px}
+.ad small{display:block}
+#consent{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px;display:none;z-index:10}
+#consent .inner{max-width:980px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#consent p{margin:0;flex:1 1 260px;font-size:.9rem}
+footer{color:var(--muted);font-size:.85rem}
+.meter{height:10px;background:var(--accent2);border-radius:6px;overflow:hidden;margin:4px 0 10px}
+.meter span{display:block;height:100%;background:var(--accent)}
+#palmPrev{max-width:260px;width:100%;border-radius:12px;display:none;margin:8px 0}
+#vidOut video,#avOut video{width:100%;border-radius:12px;margin-top:10px}
+.inline{display:flex;gap:8px;align-items:center;margin:8px 0}
+.inline input{width:auto}
+.reading{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.reading h3{margin:0 0 8px}
+nav button{font-size:.9rem;line-height:1.3;padding:8px 10px}
+nav button small{display:block;opacity:.8;font-size:.8rem}
+.result canvas,#ttOut canvas,#cartOut canvas{max-width:100%;border-radius:12px;margin-top:10px}
+.sb{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.opts{display:grid;gap:8px}
+.opts button{text-align:start}
+.opts button.ok{background:#16a34a;color:#fff}
+.opts button.no{background:#dc2626;color:#fff}
+.note-sm{font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Play &amp; Create Portal</h1>
+  <p>Free tools and family-friendly games. <label>Language / اللغة
+    <select id="gLang" style="width:auto;display:inline-block"><option value="en">English</option><option value="ar">العربية</option></select></label></p>
+</header>
+
+<main>
+  <div class="ad" data-slot="top"><small>Advertisement</small></div>
+
+  <nav role="tablist" aria-label="Sections">
+    <button role="tab" aria-selected="true" data-tab="studio">Image Studio<small>استوديو الصور</small></button>
+    <button role="tab" aria-selected="false" data-tab="video">Comedy &amp; Photo Video<small>فيديو كوميدي وسينمائي</small></button>
+    <button role="tab" aria-selected="false" data-tab="aivid">AI Video<small>فيديو بالذكاء الاصطناعي</small></button>
+    <button role="tab" aria-selected="false" data-tab="palm">Palm Fun<small>كف الحظ</small></button>
+    <button role="tab" aria-selected="false" data-tab="ind">Plant &amp; Machinery Art<small>محطات ومعدات</small></button>
+    <button role="tab" aria-selected="false" data-tab="tt">Time Traveler<small>السفر عبر الزمن</small></button>
+    <button role="tab" aria-selected="false" data-tab="cart">Cartoonizer<small>كرتون وكاريكاتير</small></button>
+    <button role="tab" aria-selected="false" data-tab="dream">Dream Fun<small>مفسر الأحلام</small></button>
+    <button role="tab" aria-selected="false" data-tab="memory">Memory Match<small>لعبة الذاكرة</small></button>
+    <button role="tab" aria-selected="false" data-tab="slide">Sliding Puzzle<small>أحجية الأرقام</small></button>
+    <button role="tab" aria-selected="false" data-tab="math">Math Quiz<small>تحدي الحساب</small></button>
+    <button role="tab" aria-selected="false" data-tab="horo">Daily Horoscope<small>الطالع اليومي</small></button>
+    <button role="tab" aria-selected="false" data-tab="nick">Nicknames &amp; Titles<small>ألقاب وعناوين</small></button>
+    <button role="tab" aria-selected="false" data-tab="story">Storyboard<small>القصص المصورة</small></button>
+    <button role="tab" aria-selected="false" data-tab="love">Compatibility<small>حاسبة التوافق</small></button>
+    <button role="tab" aria-selected="false" data-tab="meme">Meme Maker<small>صانع الميمز</small></button>
+    <button role="tab" aria-selected="false" data-tab="pet">Pet Translator<small>مترجم الحيوانات</small></button>
+    <button role="tab" aria-selected="false" data-tab="int">Room Designer<small>ديكور الغرف</small></button>
+    <button role="tab" aria-selected="false" data-tab="logo">Logo Maker<small>صانع الشعارات</small></button>
+    <button role="tab" aria-selected="false" data-tab="fit">Fitness Fun<small>محفز اللياقة</small></button>
+    <button role="tab" aria-selected="false" data-tab="quiz">Trivia Hub<small>تحدي المعلومات</small></button>
+    <button role="tab" aria-selected="false" data-tab="voice">Voice Fun<small>مؤثرات الصوت</small></button>
+    <button role="tab" aria-selected="false" data-tab="card">Greeting Cards<small>بطاقات التهنئة</small></button>
+  </nav>
+
+  <section class="panel active" id="studio">
+    <h2>Image Studio</h2>
+    <p class="status" id="engineNote"></p>
+    <label for="prompt">Describe the image</label>
+    <textarea id="prompt" rows="3" placeholder="A friendly robot gardening on a sunny balcony, watercolor style"></textarea>
+    <div class="row">
+      <select id="style" aria-label="Style">
+        <option value="">No style</option>
+        <option value="watercolor illustration">Watercolor</option>
+        <option value="flat vector marketing graphic">Marketing flat vector</option>
+        <option value="cinematic lighting, high detail">Cinematic</option>
+        <option value="children's book illustration">Children's book</option>
+      </select>
+      <select id="ratio" aria-label="Size">
+        <option value="1024x1024">Square</option>
+        <option value="1280x720">Landscape 16:9</option>
+        <option value="720x1280">Portrait 9:16</option>
+      </select>
+    </div>
+    <label class="inline"><input type="checkbox" id="funny"> Make it funny (cartoon comedy style)</label>
+    <button class="btn primary" id="gen">Generate</button>
+    <div class="status" id="genStatus" role="status"></div>
+    <div class="result" id="result"></div>
+    <div class="ad" data-slot="result"><small>Advertisement</small></div>
+    <p class="status">Video generation needs a server-side pipeline and is not included in this browser-only page.</p>
+  </section>
+
+  <section class="panel" id="memory">
+    <h2>Memory Match</h2>
+    <p class="status" id="memStatus">Find all the pairs.</p>
+    <div class="grid mem" id="memGrid"></div>
+    <div class="row"><button class="btn" id="memReset">New game</button></div>
+  </section>
+
+  <section class="panel" id="slide">
+    <h2>Sliding Puzzle</h2>
+    <p class="status" id="slStatus">Put the numbers in order.</p>
+    <div class="grid slide" id="slGrid"></div>
+    <div class="row"><button class="btn" id="slReset">Shuffle</button></div>
+  </section>
+
+  <section class="panel" id="math">
+    <h2>Math Quiz</h2>
+    <div class="row"><select id="mathLevel" aria-label="Level">
+      <option value="10">Easy (up to 10)</option>
+      <option value="20">Medium (up to 20)</option>
+      <option value="50">Hard (up to 50)</option>
+    </select></div>
+    <div class="q" id="mathQ"></div>
+    <div class="row"><input type="text" id="mathA" inputmode="numeric" autocomplete="off" aria-label="Answer">
+    <button class="btn primary" id="mathGo">Check</button></div>
+    <p class="status" id="mathStatus"></p>
+  </section>
+
+  <section class="panel" id="video">
+    <h2>Photos to Video</h2>
+    <p class="status">Pick 5 to 7 photos. Everything happens on your device; nothing is uploaded.</p>
+    <input type="file" id="vidFiles" accept="image/*" multiple aria-label="Choose 5 to 7 photos">
+    <div class="row">
+      <select id="vidMode" aria-label="Video style">
+        <option value="cinema">Cinematic (slow zoom, fades, widescreen bars)</option>
+        <option value="comedy">Comedy (bounce, shake, captions)</option>
+      </select>
+      <select id="vidSec" aria-label="Seconds per photo">
+        <option value="2">2 seconds per photo</option>
+        <option value="3" selected>3 seconds per photo</option>
+        <option value="4">4 seconds per photo</option>
+      </select>
+    </div>
+    <label for="vidCaps">Captions for Comedy style (optional, one line per photo)</label>
+    <textarea id="vidCaps" rows="4" placeholder="When the Wi-Fi comes back&#10;Me pretending I understood the meeting"></textarea>
+    <div class="row"><button class="btn primary" id="vidGo">Make video</button></div>
+    <div class="status" id="vidStatus" role="status"></div>
+    <div id="vidOut"></div>
+    <div class="ad" data-slot="video"><small>Advertisement</small></div>
+  </section>
+
+  <section class="panel" id="aivid">
+    <h2>AI Video / فيديو بالذكاء الاصطناعي</h2>
+    <p class="status" id="avNote"></p>
+    <label for="avPreset">Equipment scene / مشهد المعدات</label>
+    <select id="avPreset" aria-label="Scene preset">
+      <option value="">Custom (write your own) / وصف خاص</option>
+      <option value="drone shot of a concrete batching plant operating, silos and mixer trucks, sunny day">Concrete batching plant · محطة خرسانة</option>
+      <option value="excavator digging at a construction site, soil moving, cinematic">Excavator digging · حفار</option>
+      <option value="tower crane lifting a steel beam at sunrise, construction site">Tower crane · رافعة برجية</option>
+      <option value="wheel loader loading aggregate into a hopper, industrial yard">Wheel loader · لودر</option>
+      <option value="concrete mixer truck pouring concrete into formwork, close up">Mixer truck · خلاطة خرسانة</option>
+      <option value="asphalt paver laying a fresh road surface, steam rising">Asphalt paver · فرادة أسفلت</option>
+    </select>
+    <textarea id="avPrompt" rows="3" placeholder="Add details, in any language / أضف تفاصيل بأي لغة"></textarea>
+    <div class="row">
+      <select id="avSec" aria-label="Length"><option value="2">2 s</option><option value="3">3 s</option><option value="5" selected>5 s</option></select>
+      <button class="btn primary" id="avGo">Generate video / ولّد الفيديو</button>
+    </div>
+    <div class="meter" id="avMeter" style="display:none"><span id="avBar" style="width:0%"></span></div>
+    <div class="status" id="avSt" role="status"></div>
+    <div id="avOut"></div>
+  </section>
+
+  <section class="panel" id="palm">
+    <h2>Palm Fun / كف الحظ</h2>
+    <p class="status">A playful, positive "reading" just for entertainment. Your photo stays on your device.</p>
+    <div class="row">
+      <select id="palmLang" aria-label="Language">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+      </select>
+    </div>
+    <input type="file" id="palmFile" accept="image/*" capture="environment" aria-label="Take or choose a palm photo">
+    <img id="palmPrev" alt="Your palm photo preview">
+    <div class="row"><button class="btn primary" id="palmGo">Read my palm / اقرأ كفي</button></div>
+    <div class="status" id="palmStatus" role="status"></div>
+    <div id="palmOut"></div>
+    <div class="ad" data-slot="palm"><small>Advertisement</small></div>
+  </section>
+
+  <section class="panel" id="ind">
+    <h2>Plant &amp; Machinery Art / محطات ومعدات</h2>
+    <p class="status">Concept art for ideas and presentations. It is not an engineering drawing and must not be used for construction or design decisions.</p>
+    <select id="indSubject" aria-label="Subject">
+      <option value="concrete batching plant with silos, mixers and aggregate bins">Concrete batching plant</option>
+      <option value="tower crane on a busy construction site">Tower crane</option>
+      <option value="excavator and wheel loader at work">Excavator and loader</option>
+      <option value="asphalt mixing plant">Asphalt plant</option>
+      <option value="steel truss bridge over a river">Steel bridge</option>
+      <option value="modern residential building floor plan">Building floor plan</option>
+    </select>
+    <div class="row"><select id="indView" aria-label="View style">
+      <option value="isometric 3D render, clean background">Isometric 3D render</option>
+      <option value="technical blueprint style, white lines on blue background">Blueprint style</option>
+      <option value="realistic photograph style, golden hour">Realistic photo style</option>
+      <option value="cutaway diagram style, labeled look">Cutaway diagram style</option>
+    </select></div>
+    <textarea id="indExtra" rows="2" placeholder="Extra details, in any language"></textarea>
+    <div class="row"><button class="btn primary" id="indGo">Generate</button></div>
+    <div class="status" id="indSt" role="status"></div><div class="result" id="indOut"></div>
+  </section>
+
+  <section class="panel" id="tt">
+    <h2>Time Traveler / السفر عبر الزمن</h2>
+    <p class="status">Fun photo filters (vintage, retro, future). They do not actually age faces. Your photo stays on your device.</p>
+    <input type="file" id="ttFile" accept="image/*" aria-label="Choose a photo">
+    <div class="row"><select id="ttMode" aria-label="Filter">
+      <option value="vintage">Vintage 1920s</option><option value="retro">Retro 80s</option><option value="future">Future neon</option>
+    </select><button class="btn primary" id="ttGo">Apply</button></div>
+    <div class="status" id="ttSt" role="status"></div><div id="ttOut"></div>
+  </section>
+
+  <section class="panel" id="cart">
+    <h2>Cartoonizer / كرتون وكاريكاتير</h2>
+    <p class="status">Turns a photo into a cartoon or a pencil sketch on your device.</p>
+    <input type="file" id="cartFile" accept="image/*" aria-label="Choose a photo">
+    <div class="row"><select id="cartMode" aria-label="Style"><option value="cartoon">Cartoon</option><option value="sketch">Pencil sketch</option></select>
+    <button class="btn primary" id="cartGo">Convert</button></div>
+    <div class="status" id="cartSt" role="status"></div><div id="cartOut"></div>
+  </section>
+
+  <section class="panel" id="dream">
+    <h2>Dream Fun / مفسر الأحلام</h2>
+    <p class="status">A light, reflective game with common dream symbols. Not a real interpretation or advice.</p>
+    <textarea id="dreamText" rows="3" placeholder="Describe your dream / اكتب حلمك"></textarea>
+    <div class="row"><button class="btn primary" id="dreamGo">Interpret</button></div>
+    <div id="dreamOut"></div>
+  </section>
+
+  <section class="panel" id="horo">
+    <h2>Daily Horoscope / الطالع اليومي</h2>
+    <p class="status">Entertainment only. The same sign gets the same reading all day.</p>
+    <select id="horoSign" aria-label="Sign">
+      <option value="0">Aries · الحمل</option><option value="1">Taurus · الثور</option><option value="2">Gemini · الجوزاء</option>
+      <option value="3">Cancer · السرطان</option><option value="4">Leo · الأسد</option><option value="5">Virgo · العذراء</option>
+      <option value="6">Libra · الميزان</option><option value="7">Scorpio · العقرب</option><option value="8">Sagittarius · القوس</option>
+      <option value="9">Capricorn · الجدي</option><option value="10">Aquarius · الدلو</option><option value="11">Pisces · الحوت</option>
+    </select>
+    <div class="row"><button class="btn primary" id="horoGo">Show my day</button></div>
+    <div id="horoOut"></div>
+  </section>
+
+  <section class="panel" id="nick">
+    <h2>Nicknames &amp; Titles / ألقاب وعناوين</h2>
+    <input type="text" id="nickName" placeholder="Name / الاسم" aria-label="Name">
+    <div class="row"><select id="nickVibe" aria-label="Vibe">
+      <option value="funny">Funny</option><option value="cool">Cool</option><option value="royal">Royal</option></select>
+    <button class="btn primary" id="nickGo">Nicknames</button></div>
+    <input type="text" id="nickTopic" placeholder="Video topic / موضوع الفيديو" aria-label="Topic">
+    <div class="row"><button class="btn" id="titleGo">Viral titles</button></div>
+    <div id="nickOut"></div>
+  </section>
+
+  <section class="panel" id="story">
+    <h2>Storyboard / القصص المصورة</h2>
+    <p class="status">Write one scene per line (up to 8), then illustrate each frame.</p>
+    <textarea id="sbText" rows="5" placeholder="A cat opens a tiny cafe&#10;The first customer is a pigeon"></textarea>
+    <div class="row"><select id="sbStyle" aria-label="Style">
+      <option value="storyboard sketch, black and white">Sketch</option>
+      <option value="cartoon, bright colors">Cartoon</option>
+      <option value="cinematic still, soft light">Cinematic</option></select>
+    <button class="btn primary" id="sbGo">Build storyboard</button></div>
+    <div class="status" id="sbSt" role="status"></div><div class="sb" id="sbOut"></div>
+  </section>
+
+  <section class="panel" id="love">
+    <h2>Compatibility / حاسبة التوافق</h2>
+    <p class="status">Just for fun. Real relationships are not decided by names.</p>
+    <div class="row"><input type="text" id="loveA" placeholder="Name 1" aria-label="Name 1"><input type="text" id="loveB" placeholder="Name 2" aria-label="Name 2"></div>
+    <div class="row"><select id="loveKind" aria-label="Type"><option value="love">Love</option><option value="friend">Friendship</option></select>
+    <button class="btn primary" id="loveGo">Calculate</button></div>
+    <div id="loveOut"></div>
+  </section>
+
+  <section class="panel" id="meme">
+    <h2>Meme Maker / صانع الميمز</h2>
+    <input type="file" id="memeFile" accept="image/*" aria-label="Choose a photo (optional)">
+    <div class="row"><input type="text" id="memeTop" placeholder="Top text" aria-label="Top text"><input type="text" id="memeBot" placeholder="Bottom text" aria-label="Bottom text"></div>
+    <div class="row"><button class="btn primary" id="memeGo">Make meme</button></div>
+    <div id="memeOut"></div>
+  </section>
+
+  <section class="panel" id="pet">
+    <h2>Pet Translator / مترجم الحيوانات</h2>
+    <p class="status">A joke translator. It does not really understand animals.</p>
+    <div class="row"><input type="text" id="petName" placeholder="Pet name / اسم الحيوان" aria-label="Pet name">
+    <select id="petKind" aria-label="Pet"><option value="🐱">Cat</option><option value="🐶">Dog</option><option value="🐦">Bird</option><option value="🐰">Rabbit</option></select></div>
+    <select id="petDo" aria-label="Behavior">
+      <option value="0">Stares at me</option><option value="1">Runs around wildly</option><option value="2">Knocks things off the table</option>
+      <option value="3">Sleeps on me</option><option value="4">Waits at the door</option><option value="5">Wags tail or purrs</option></select>
+    <div class="row"><button class="btn primary" id="petGo">Translate</button></div>
+    <div id="petOut"></div>
+  </section>
+
+  <section class="panel" id="int">
+    <h2>Room Designer / ديكور الغرف</h2>
+    <p class="status">Generates concept images from a description. It does not edit photos of your own room or measure anything.</p>
+    <div class="row"><select id="intRoom" aria-label="Room"><option>living room</option><option>bedroom</option><option>kitchen</option><option>majlis</option><option>home office</option></select>
+    <select id="intStyle" aria-label="Style"><option>modern minimalist</option><option>classic Arabic</option><option>Scandinavian</option><option>industrial loft</option><option>mid-century modern</option></select></div>
+    <input type="text" id="intColors" placeholder="Colors, e.g. beige and olive green" aria-label="Colors">
+    <div class="row"><button class="btn primary" id="intGo">Generate</button></div>
+    <div class="status" id="intSt" role="status"></div><div class="result" id="intOut"></div>
+  </section>
+
+  <section class="panel" id="logo">
+    <h2>Logo Maker / صانع الشعارات</h2>
+    <div class="row"><input type="text" id="logoText" placeholder="Main text" aria-label="Main text"><input type="text" id="logoSub" placeholder="Small text (optional)" aria-label="Small text"></div>
+    <div class="row"><select id="logoShape" aria-label="Shape"><option value="circle">Circle</option><option value="round">Rounded square</option><option value="hex">Hexagon</option></select>
+    <select id="logoFont" aria-label="Font"><option value="Georgia,serif">Serif</option><option value="'Arial Black',Arial,sans-serif">Bold sans</option><option value="Tahoma,Arial,sans-serif">Arabic friendly</option></select></div>
+    <div class="row"><label>Background <input type="color" id="logoBg" value="#4f46e5"></label><label>Text <input type="color" id="logoFg" value="#ffffff"></label></div>
+    <div class="row"><button class="btn primary" id="logoGo">Create</button></div>
+    <div id="logoOut"></div>
+  </section>
+
+  <section class="panel" id="fit">
+    <h2>Fitness Fun / محفز اللياقة</h2>
+    <p class="status">General motivation only, not medical advice. Check with a doctor before starting new exercise.</p>
+    <div class="row"><select id="fitKind" aria-label="Focus"><option value="move">Get moving</option><option value="strong">Strength</option><option value="calm">Stretch and relax</option></select>
+    <button class="btn primary" id="fitGo">Motivate me</button></div>
+    <div id="fitOut"></div>
+    <div class="row"><button class="btn" id="fitTimer">Start 6 x (30 s work, 10 s rest)</button></div>
+    <div class="q" id="fitClock" aria-live="polite"></div>
+  </section>
+
+  <section class="panel" id="quiz">
+    <h2>Trivia Hub / تحدي المعلومات</h2>
+    <p class="status">A fun general-knowledge challenge, not a real IQ test.</p>
+    <div class="row"><button class="btn primary" id="quizGo">Start</button></div>
+    <div class="q" id="quizQ"></div><div class="opts" id="quizOpts"></div><p class="status" id="quizSt" role="status"></p>
+  </section>
+
+  <section class="panel" id="voice">
+    <h2>Voice Fun / مؤثرات الصوت</h2>
+    <p class="status">Record up to 8 seconds, then change the voice. Audio stays on your device.</p>
+    <div class="row"><button class="btn" id="vRec">Record</button>
+    <select id="vFx" aria-label="Effect"><option value="chip">Chipmunk</option><option value="deep">Deep voice</option><option value="robot">Robot</option></select>
+    <button class="btn primary" id="vPlay">Play</button></div>
+    <a class="btn" id="vDl" style="display:none;margin-top:8px">Download WAV</a>
+    <div class="status" id="vSt" role="status"></div>
+  </section>
+
+  <section class="panel" id="card">
+    <h2>Greeting Cards / بطاقات التهنئة</h2>
+    <div class="row"><select id="cardOcc" aria-label="Occasion">
+      <option value="eid">Eid · عيد</option><option value="ram">Ramadan · رمضان</option><option value="bday">Birthday · عيد ميلاد</option>
+      <option value="ny">New Year · رأس السنة</option><option value="cong">Congratulations · تهنئة</option><option value="thx">Thank you · شكر</option></select>
+    <select id="cardLang" aria-label="Language"><option value="en">English</option><option value="ar">العربية</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="zh">中文</option></select></div>
+    <div class="row"><input type="text" id="cardName" placeholder="Name / الاسم" aria-label="Name">
+    <select id="cardTheme" aria-label="Colors"><option value="0">Indigo</option><option value="1">Teal</option><option value="2">Amber</option><option value="3">Rose</option></select></div>
+    <div class="row"><button class="btn primary" id="cardGo">Create card</button></div>
+    <div id="cardOut"></div>
+  </section>
+
+  <div class="ad" data-slot="bottom"><small>Advertisement</small></div>
+</main>
+
+<footer>
+  <p>&copy; 2026 Mahmoud Salem Bayoumi. All rights reserved.
+    <a href="about.html">About</a> · <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a></p>
+  <p>AI-generated images come from a third-party service; check its terms for commercial use. Entertainment tools (palm, dreams, horoscope, love, pet, fitness) are for fun only, not advice. Use only photos and voices you have permission to use.</p>
+</footer>
+
+<div id="consent" role="dialog" aria-label="Cookie and ad consent">
+  <div class="inner">
+    <p>We use cookies for ads and to keep the site running. Accept personalized ads, or keep non-personalized ads only.</p>
+    <button class="btn primary" id="cAccept">Accept</button>
+    <button class="btn" id="cDecline">Non-personalized only</button>
+  </div>
+</div>
+
+<script>
+/* ===== CONFIG: edit these before deploying ===== */
+const CONFIG = {
+  ADSENSE_CLIENT: "",                 // e.g. "ca-pub-1234567890123456" (leave empty to disable ads)
+  AD_SLOTS: { top: "", result: "", bottom: "", video: "", palm: "" }, // slot IDs from your AdSense account
+  // {prompt}, {w}, {h} are replaced. Swap for any service or your own backend.
+  IMAGE_URL: "https://image.pollinations.ai/prompt/{prompt}?width={w}&height={h}&nologo=true",
+  // Used automatically when the page is opened from local_server.py (it answers /health on the same address).
+  LOCAL_IMAGE_URL: "/generate?prompt={prompt}&width={w}&height={h}",
+  LOCAL: false,
+  VIDEO: false  // set automatically when local_server.py runs with --video-model
+};
+
+/* ===== Tabs ===== */
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  document.querySelectorAll("section.panel").forEach(p=>p.classList.toggle("active",p.id===b.dataset.tab));
+}));
+
+/* ===== Ads + consent ===== */
+function loadAds(personalized){
+  if(!CONFIG.ADSENSE_CLIENT) return;
+  window.adsbygoogle = window.adsbygoogle || [];
+  if(!personalized) window.adsbygoogle.requestNonPersonalizedAds = 1;
+  const s=document.createElement("script");
+  s.async=true; s.crossOrigin="anonymous";
+  s.src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="+encodeURIComponent(CONFIG.ADSENSE_CLIENT);
+  s.onload=()=>{
+    document.querySelectorAll(".ad").forEach(el=>{
+      const slot=CONFIG.AD_SLOTS[el.dataset.slot];
+      if(!slot) return;
+      el.innerHTML='<ins class="adsbygoogle" style="display:block" data-ad-client="'+CONFIG.ADSENSE_CLIENT+
+        '" data-ad-slot="'+slot+'" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+      try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}
+    });
+  };
+  document.head.appendChild(s);
+}
+(function consent(){
+  let c=null; try{c=localStorage.getItem("adConsent");}catch(e){}
+  const box=document.getElementById("consent");
+  const set=v=>{try{localStorage.setItem("adConsent",v);}catch(e){} box.style.display="none"; loadAds(v==="yes");};
+  if(c){loadAds(c==="yes");}
+  else if(CONFIG.ADSENSE_CLIENT){box.style.display="block";}
+  document.getElementById("cAccept").onclick=()=>set("yes");
+  document.getElementById("cDecline").onclick=()=>set("no");
+})();
+
+/* ===== Image studio ===== */
+document.getElementById("gen").addEventListener("click",()=>{
+  const p=document.getElementById("prompt").value.trim();
+  const st=document.getElementById("genStatus"), out=document.getElementById("result");
+  if(!p){st.textContent="Please type a description first.";return;}
+  if(blocked(p)){st.textContent="This prompt names a protected character or brand. Describe your idea in your own words instead.";return;}
+  const style=document.getElementById("style").value;
+  const [w,h]=document.getElementById("ratio").value.split("x");
+  let full=style?p+", "+style:p;
+  if(document.getElementById("funny").checked) full+=", funny cartoon, comedic, family-friendly";
+  genImage(full,w,h,st,out);
+});
+
+/* ===== Memory match ===== */
+(function(){
+  const emojis=["🐶","🐱","🐼","🦊","🐸","🦄","🐢","🐙"];
+  const grid=document.getElementById("memGrid"), st=document.getElementById("memStatus");
+  let first=null, lock=false, moves=0, found=0;
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function reset(){
+    grid.innerHTML=""; first=null; lock=false; moves=0; found=0; st.textContent="Find all the pairs.";
+    shuffle(emojis.concat(emojis)).forEach(e=>{
+      const b=document.createElement("button");
+      b.setAttribute("aria-label","Hidden card"); b.dataset.e=e;
+      b.addEventListener("click",()=>flip(b)); grid.appendChild(b);
+    });
+  }
+  function flip(b){
+    if(lock||b.classList.contains("open")||b.classList.contains("done")) return;
+    b.classList.add("open"); b.textContent=b.dataset.e;
+    if(!first){first=b;return;}
+    moves++;
+    if(first.dataset.e===b.dataset.e){
+      first.classList.add("done"); b.classList.add("done"); first=null; found++;
+      st.textContent=found===emojis.length?"You won in "+moves+" moves!":"Match! Moves: "+moves;
+    }else{
+      lock=true; const a=first; first=null;
+      setTimeout(()=>{[a,b].forEach(x=>{x.classList.remove("open");x.textContent="";});lock=false;},700);
+      st.textContent="Moves: "+moves;
+    }
+  }
+  document.getElementById("memReset").onclick=reset; reset();
+})();
+
+/* ===== Sliding puzzle (3x3) ===== */
+(function(){
+  const grid=document.getElementById("slGrid"), st=document.getElementById("slStatus");
+  let t=[];
+  function solved(){return t.every((v,i)=>v===(i+1)%9);}
+  function render(){
+    grid.innerHTML="";
+    t.forEach((v,i)=>{
+      const b=document.createElement("button");
+      if(v===0){b.className="empty";b.disabled=true;b.setAttribute("aria-label","Empty");}
+      else{b.textContent=v;b.addEventListener("click",()=>move(i));}
+      grid.appendChild(b);
+    });
+  }
+  function neighbors(i){const r=Math.floor(i/3),c=i%3,n=[];
+    if(r>0)n.push(i-3);if(r<2)n.push(i+3);if(c>0)n.push(i-1);if(c<2)n.push(i+1);return n;}
+  function move(i){
+    const z=t.indexOf(0);
+    if(neighbors(z).includes(i)){[t[z],t[i]]=[t[i],t[z]];render();
+      st.textContent=solved()?"Solved! Great job.":"Put the numbers in order.";}
+  }
+  function reset(){
+    t=[1,2,3,4,5,6,7,8,0];
+    for(let k=0;k<200;k++){const z=t.indexOf(0),n=neighbors(z);const i=n[Math.floor(Math.random()*n.length)];[t[z],t[i]]=[t[i],t[z]];}
+    st.textContent="Put the numbers in order."; render();
+  }
+  document.getElementById("slReset").onclick=reset; reset();
+})();
+
+/* ===== Math quiz ===== */
+(function(){
+  const q=document.getElementById("mathQ"), a=document.getElementById("mathA"), st=document.getElementById("mathStatus");
+  const lvl=document.getElementById("mathLevel");
+  let ans=0, score=0, total=0;
+  function next(){
+    const m=parseInt(lvl.value,10), x=1+Math.floor(Math.random()*m), y=1+Math.floor(Math.random()*m);
+    const op=["+","-","×"][Math.floor(Math.random()*3)];
+    let xx=x,yy=y;
+    if(op==="-"&&y>x){xx=y;yy=x;}
+    if(op==="×"){xx=1+Math.floor(Math.random()*Math.min(m,12));yy=1+Math.floor(Math.random()*Math.min(m,12));}
+    ans=op==="+"?xx+yy:op==="-"?xx-yy:xx*yy;
+    q.textContent=xx+" "+op+" "+yy+" = ?"; a.value=""; a.focus();
+  }
+  function check(){
+    if(a.value.trim()==="")return;
+    total++;
+    if(parseInt(a.value,10)===ans){score++;st.textContent="Correct! Score "+score+"/"+total;}
+    else{st.textContent="Not quite, the answer was "+ans+". Score "+score+"/"+total;}
+    next();
+  }
+  document.getElementById("mathGo").onclick=check;
+  a.addEventListener("keydown",e=>{if(e.key==="Enter")check();});
+  lvl.onchange=next; next();
+})();
+/* ===== Photos to video (runs fully in the browser) ===== */
+(function(){
+  const input=document.getElementById("vidFiles"), st=document.getElementById("vidStatus");
+  const btn=document.getElementById("vidGo"), out=document.getElementById("vidOut");
+  const W=1280, H=720, FPS=30;
+
+  function pickMime(){
+    if(!window.MediaRecorder) return "";
+    const c=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm","video/mp4"];
+    for(const m of c){ if(MediaRecorder.isTypeSupported(m)) return m; }
+    return "";
+  }
+  function loadImg(file){
+    return new Promise((res,rej)=>{
+      const u=URL.createObjectURL(file), im=new Image();
+      im.onload=()=>res({im,u});
+      im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error(file.name));};
+      im.src=u;
+    });
+  }
+  function drawCover(ctx,im,zoom,dx,dy,alpha){
+    const s=Math.max(W/im.naturalWidth,H/im.naturalHeight)*zoom;
+    const w=im.naturalWidth*s, h=im.naturalHeight*s;
+    ctx.globalAlpha=alpha;
+    ctx.drawImage(im,(W-w)/2+dx,(H-h)/2+dy,w,h);
+    ctx.globalAlpha=1;
+  }
+  function frame(ctx,imgs,T,D,mode,caps,total){
+    const n=imgs.length, i=Math.min(n-1,Math.floor(T/D)), lt=Math.min(1,(T-i*D)/D);
+    ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
+    if(mode==="cinema"){
+      const fade=0.18, z=1+0.12*lt, dx=(0.5-lt)*50;
+      if(i>0&&lt<fade){
+        drawCover(ctx,imgs[i-1],1.12,-25,0,1);
+        drawCover(ctx,imgs[i],z,dx,0,lt/fade);
+      }else{
+        drawCover(ctx,imgs[i],z,dx,0,1);
+      }
+      ctx.fillStyle="#000";
+      ctx.fillRect(0,0,W,H*0.09); ctx.fillRect(0,H*0.91,W,H*0.09);
+      const edge=Math.min(1,T/0.5,(total-T)/0.6);
+      if(edge<1){ctx.globalAlpha=1-Math.max(0,edge); ctx.fillRect(0,0,W,H); ctx.globalAlpha=1;}
+    }else{
+      const beat=Math.abs(Math.sin(T*Math.PI*2.5));
+      const ang=0.025*Math.sin(T*18);
+      const z=1.18+0.06*beat+0.08*lt;
+      ctx.save();
+      ctx.translate(W/2,H/2); ctx.rotate(ang); ctx.translate(-W/2,-H/2);
+      drawCover(ctx,imgs[i],z,0,0,1);
+      ctx.restore();
+      const cap=caps[i]||"";
+      if(cap){
+        let size=64;
+        ctx.textAlign="center"; ctx.textBaseline="bottom";
+        ctx.lineJoin="round"; ctx.strokeStyle="#000"; ctx.fillStyle="#fff";
+        do{ ctx.font="bold "+size+"px Impact, 'Arial Black', sans-serif"; size-=4; }
+        while(size>24 && ctx.measureText(cap).width>W-80);
+        const pop=Math.min(1,0.6+lt*6);
+        ctx.save();
+        ctx.translate(W/2,H-40); ctx.scale(pop,pop);
+        ctx.lineWidth=8; ctx.strokeText(cap,0,0); ctx.fillText(cap,0,0);
+        ctx.restore();
+      }
+      ctx.font="80px serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("😂",W-80,80+10*Math.sin(T*10));
+      if(lt<0.05){ctx.fillStyle="#fff"; ctx.globalAlpha=0.5*(1-lt/0.05); ctx.fillRect(0,0,W,H); ctx.globalAlpha=1;}
+    }
+  }
+
+  btn.addEventListener("click",async()=>{
+    const files=Array.from(input.files||[]);
+    if(files.length<5||files.length>7){st.textContent="Please choose 5 to 7 photos (you chose "+files.length+").";return;}
+    if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){
+      st.textContent="This browser can't record video here. Try a recent Chrome, Edge, Firefox or Safari.";return;
+    }
+    btn.disabled=true; out.innerHTML=""; st.textContent="Loading photos...";
+    let loaded;
+    try{ loaded=await Promise.all(files.map(loadImg)); }
+    catch(e){ st.textContent="Could not read "+e.message+". Use JPG, PNG or WebP photos."; btn.disabled=false; return; }
+    const imgs=loaded.map(x=>x.im);
+    const D=parseFloat(document.getElementById("vidSec").value);
+    const mode=document.getElementById("vidMode").value;
+    const caps=document.getElementById("vidCaps").value.split("\n").map(s=>s.trim());
+    const total=D*imgs.length;
+    const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+    const ctx=cv.getContext("2d");
+    frame(ctx,imgs,0,D,mode,caps,total);
+    const mime=pickMime();
+    const opts={videoBitsPerSecond:5000000}; if(mime) opts.mimeType=mime;
+    let rec;
+    try{ rec=new MediaRecorder(cv.captureStream(FPS),opts); }
+    catch(e){ st.textContent="Video recording isn't supported in this browser."; btn.disabled=false; return; }
+    const chunks=[];
+    rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+    rec.onstop=()=>{
+      const type=rec.mimeType||mime||"video/webm";
+      const url=URL.createObjectURL(new Blob(chunks,{type}));
+      const v=document.createElement("video");
+      v.src=url; v.controls=true; v.playsInline=true;
+      const a=document.createElement("a");
+      a.href=url; a.download="my-video."+(type.includes("mp4")?"mp4":"webm");
+      a.className="btn primary"; a.textContent="Download video"; a.style.display="inline-block"; a.style.marginTop="10px";
+      out.innerHTML=""; out.appendChild(v); out.appendChild(a);
+      st.textContent="Done! Your "+Math.round(total)+"-second video is ready.";
+      loaded.forEach(x=>URL.revokeObjectURL(x.u));
+      btn.disabled=false;
+    };
+    rec.start();
+    const t0=performance.now();
+    (function tick(){
+      const T=(performance.now()-t0)/1000;
+      if(T>=total){
+        frame(ctx,imgs,total-0.001,D,mode,caps,total);
+        setTimeout(()=>rec.stop(),200);
+        return;
+      }
+      frame(ctx,imgs,T,D,mode,caps,total);
+      st.textContent="Rendering... "+Math.round(T/total*100)+"% (keep this tab open)";
+      requestAnimationFrame(tick);
+    })();
+  });
+})();
+
+/* ===== Palm Fun: playful reading for entertainment only ===== */
+(function(){
+  const inp=document.getElementById("palmFile"), prev=document.getElementById("palmPrev");
+  const go=document.getElementById("palmGo"), out=document.getElementById("palmOut");
+  const st=document.getElementById("palmStatus"), langSel=document.getElementById("palmLang");
+  let url=null;
+  const TXT={
+    en:{
+      dir:"ltr", title:"Your playful palm reading", scanning:"Scanning your palm...", needPhoto:"Please take or choose a photo first.",
+      traitH:"Your personality spark", forecastH:"Your uplifting forecast", techH:"Futuristic scan note",
+      numL:"Lucky number", colL:"Lucky color",
+      meters:["Creativity","Energy","Luck","Kindness"],
+      note:"For entertainment only. This is not a real prediction and has no scientific basis. Your photo never leaves your device.",
+      traits:["Curious explorer: you love figuring out how things work.","Warm connector: people feel at ease around you.","Creative spark: your ideas arrive at unexpected moments.","Steady builder: you finish what you start.","Playful optimist: you find the funny side of almost anything.","Brave learner: you try new things even when they're unfamiliar."],
+      forecasts:["This week a small win arrives from somewhere you weren't looking.","A conversation soon sparks an idea worth writing down.","Someone will thank you for something you've forgotten you did.","A tidy-up, digital or real, brings an unexpected sense of calm.","You will soon discover a shortcut that saves you time.","A message you've been hoping for is closer than you think."],
+      tech:["Your future self has a very organized folder system.","In 2040, a robot assistant will politely agree your ideas were ahead of their time.","Your lucky gadget is anything with a fully charged battery.","The scanner detects high levels of good-idea energy."],
+      colors:["Teal","Gold","Violet","Coral","Sky blue","Emerald"]
+    },
+    ar:{
+      dir:"rtl", title:"قراءة كفّك المرحة", scanning:"جارٍ مسح كفّك...", needPhoto:"من فضلك التقط صورة أو اخترها أولًا.",
+      traitH:"شرارة شخصيتك", forecastH:"توقّعاتك المبهجة", techH:"ملاحظة من الماسح المستقبلي",
+      numL:"رقمك المحظوظ", colL:"لونك المحظوظ",
+      meters:["الإبداع","الطاقة","الحظ","اللطف"],
+      note:"للتسلية فقط. هذه ليست قراءة حقيقية أو تنبؤًا، ولا أساس علمي لها. صورتك لا تغادر جهازك.",
+      traits:["مستكشف فضولي: تحب أن تفهم كيف تعمل الأشياء.","صاحب قلب دافئ: يشعر الناس بالراحة بقربك.","شرارة إبداع: تأتيك الأفكار في أوقات غير متوقعة.","بنّاء ثابت: تُكمل ما تبدأ به.","متفائل مرح: تجد الجانب الطريف في كل شيء تقريبًا.","متعلّم شجاع: تجرّب الجديد حتى لو كان غريبًا عليك."],
+      forecasts:["هذا الأسبوع يأتيك إنجاز صغير من مكان لم تتوقعه.","محادثة قريبة ستلهمك فكرة تستحق أن تدوّنها.","سيشكرك أحدهم على شيء نسيت أنك فعلته.","ترتيب بسيط، رقمي أو واقعي، يمنحك راحة غير متوقعة.","ستكتشف قريبًا طريقًا مختصرًا يوفّر عليك الوقت.","رسالة تنتظرها أقرب مما تظن."],
+      tech:["نسختك المستقبلية لديها نظام ملفات منظّم جدًا.","في عام 2040 سيقرّ مساعدك الآلي بأن أفكارك كانت سابقة لعصرها.","جهازك المحظوظ هو أي جهاز بطاريته مشحونة بالكامل.","الماسح يرصد مستوى عاليًا من طاقة الأفكار الجيدة."],
+      colors:["أخضر مزرق","ذهبي","بنفسجي","مرجاني","أزرق سماوي","زمردي"]
+    }
+  };
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function seedFrom(img){
+    const c=document.createElement("canvas"); c.width=16; c.height=16;
+    const x=c.getContext("2d"); x.drawImage(img,0,0,16,16);
+    const d=x.getImageData(0,0,16,16).data; let h=2166136261;
+    for(let k=0;k<d.length;k++){h^=(d[k]>>4);h=Math.imul(h,16777619);}
+    return h>>>0;
+  }
+  inp.addEventListener("change",()=>{
+    const f=inp.files&&inp.files[0];
+    if(url){URL.revokeObjectURL(url);url=null;}
+    if(!f||!f.type.startsWith("image/")){prev.style.display="none";return;}
+    url=URL.createObjectURL(f); prev.src=url; prev.style.display="block"; out.innerHTML=""; st.textContent="";
+  });
+  go.addEventListener("click",()=>{
+    const L=TXT[langSel.value];
+    if(!url){st.textContent=L.needPhoto;return;}
+    st.textContent=L.scanning; out.innerHTML=""; go.disabled=true;
+    setTimeout(()=>{
+      const rnd=mulberry32(seedFrom(prev));
+      const pick=a=>a[Math.floor(rnd()*a.length)];
+      const nums=1+Math.floor(rnd()*99);
+      const bars=L.meters.map(m=>[m,60+Math.floor(rnd()*40)]);
+      const box=document.createElement("div"); box.className="reading"; box.dir=L.dir;
+      const add=(tag,text)=>{const e=document.createElement(tag);e.textContent=text;box.appendChild(e);return e;};
+      add("h3",L.title);
+      add("strong",L.traitH); add("p",pick(L.traits));
+      add("strong",L.forecastH); add("p",pick(L.forecasts));
+      add("strong",L.techH); add("p",pick(L.tech));
+      bars.forEach(b=>{
+        add("div",b[0]+": "+b[1]+"%");
+        const m=document.createElement("div"); m.className="meter";
+        const s=document.createElement("span"); s.style.width=b[1]+"%"; m.appendChild(s); box.appendChild(m);
+      });
+      add("p",L.numL+": "+nums+"  |  "+L.colL+": "+pick(L.colors));
+      const n=add("p",L.note); n.className="status";
+      out.appendChild(box); st.textContent=""; go.disabled=false;
+    },1500);
+  });
+})();
+/* ===================== Extra tools ===================== */
+const $=id=>document.getElementById(id);
+const gl=()=>$("gLang").value;
+const tx=(en,ar)=>gl()==="ar"?ar:en;
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function mkRng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function pickFrom(r,a){return a[Math.floor(r()*a.length)];}
+function card(out,title,lines,note){
+  out.innerHTML="";
+  const b=document.createElement("div"); b.className="reading"; b.dir=gl()==="ar"?"rtl":"ltr";
+  const h=document.createElement("h3"); h.textContent=title; b.appendChild(h);
+  lines.forEach(t=>{const p=document.createElement("p"); p.textContent=t; b.appendChild(p);});
+  if(note){const n=document.createElement("p"); n.className="status"; n.textContent=note; b.appendChild(n);}
+  out.appendChild(b);
+}
+const FUN=()=>tx("For entertainment only.","للتسلية فقط.");
+function fileImage(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);res(im);};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("img"));};im.src=u;});}
+function fitCanvas(im,max){const s=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.naturalWidth*s));c.height=Math.max(1,Math.round(im.naturalHeight*s));c.getContext("2d").drawImage(im,0,0,c.width,c.height);return c;}
+function showCanvas(cv,out,name){
+  out.innerHTML=""; out.appendChild(cv);
+  const a=document.createElement("a"); a.className="btn primary"; a.textContent="Download PNG"; a.href="#";
+  a.style.display="inline-block"; a.style.marginTop="10px";
+  a.addEventListener("click",e=>{e.preventDefault();cv.toBlob(b=>{const u=URL.createObjectURL(b);const l=document.createElement("a");l.href=u;l.download=name;l.click();setTimeout(()=>URL.revokeObjectURL(u),2000);});});
+  out.appendChild(a);
+}
+/* Basic guard: refuse prompts that name well-known protected characters or brands. Extend this list for your market. */
+const BLOCK=["disney","mickey","minnie","marvel","avengers","spider-man","spiderman","batman","superman","pokemon","pikachu","nintendo","mario","zelda","star wars","harry potter","hello kitty","frozen","elsa","simpsons","coca-cola","coca cola","nike","adidas","mcdonald","ديزني","ميكي","سبايدرمان","باتمان","سوبرمان","بوكيمون","ماريو"];
+function blocked(p){const t=String(p).toLowerCase();return BLOCK.some(w=>t.includes(w));}
+function genImage(prompt,w,h,st,out,seed){
+  if(blocked(prompt)){st.textContent="This prompt names a protected character or brand. Describe your idea in your own words instead.";return;}
+  const base=CONFIG.IMAGE_URL.replace("{prompt}",encodeURIComponent(prompt)).replace("{w}",w).replace("{h}",h);
+  out.innerHTML="";
+  if(CONFIG.LOCAL){
+    /* Local model server: fetch so real error messages (busy, refused prompt, failure) can be shown. */
+    const sd=seed||Math.floor(Math.random()*1e6);
+    const lurl=base+(base.includes("?")?"&":"?")+"seed="+sd;
+    st.textContent=tx("Generating on your computer... the first image can take longer.","جارٍ التوليد على جهازك... قد تستغرق أول صورة وقتًا أطول.");
+    fetch(lurl).then(async r=>{
+      if(!r.ok){let m="";try{m=(await r.json()).error;}catch(e){} throw new Error(m||("Server error "+r.status));}
+      return r.blob();
+    }).then(b=>{
+      const im=new Image(); im.alt=prompt; im.style.maxWidth="100%"; im.style.borderRadius="12px";
+      im.src=URL.createObjectURL(b); out.appendChild(im); st.textContent="Done.";
+    }).catch(e=>{
+      st.textContent=(e instanceof TypeError)
+        ?tx("Cannot reach the local server. Is its window still open?","لا يمكن الوصول إلى الخادم المحلي. هل نافذته ما زالت مفتوحة؟")
+        :tx("Local generation failed: ","فشل التوليد المحلي: ")+e.message;
+    });
+    return;
+  }
+  let tries=0; st.textContent="Generating... this can take a few seconds.";
+  const img=new Image(); img.alt=prompt; img.style.maxWidth="100%"; img.style.borderRadius="12px";
+  const load=()=>{
+    const sd=seed?seed:(tries?Math.floor(Math.random()*1e6):0);
+    img.src=sd?base+(base.includes("?")?"&":"?")+"seed="+sd:base;
+  };
+  img.onload=()=>{st.textContent="Done.";out.appendChild(img);};
+  img.onerror=()=>{tries++; if(tries<=2){st.textContent="Retrying ("+tries+" of 2)...";load();}else{st.textContent="Could not generate the image right now. Try again later.";}};
+  load();
+}
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{
+  const p=$(b.dataset.tab); if(p&&p.scrollIntoView){try{p.scrollIntoView({behavior:"smooth",block:"start"});}catch(e){}}
+}));
+
+/* Industrial and interior concept art */
+$("indGo").onclick=()=>{
+  const ex=$("indExtra").value.trim();
+  genImage($("indSubject").value+", "+$("indView").value+(ex?", "+ex:""),1280,720,$("indSt"),$("indOut"));
+};
+$("intGo").onclick=()=>{
+  const c=$("intColors").value.trim();
+  genImage("interior design, "+$("intRoom").value+", "+$("intStyle").value+" style"+(c?", "+c:"")+", natural light, high detail",1280,720,$("intSt"),$("intOut"));
+};
+
+/* Time traveler filters */
+$("ttGo").onclick=async()=>{
+  const st=$("ttSt"), f=$("ttFile").files[0];
+  if(!f){st.textContent="Choose a photo first.";return;}
+  let im; try{im=await fileImage(f);}catch(e){st.textContent="Could not read that photo.";return;}
+  const cv=fitCanvas(im,900), ctx=cv.getContext("2d"), w=cv.width, h=cv.height;
+  const id=ctx.getImageData(0,0,w,h), d=id.data, mode=$("ttMode").value;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const i=(y*w+x)*4; let r=d[i],g=d[i+1],b=d[i+2];
+    const n=(Math.random()-0.5)*(mode==="vintage"?40:16);
+    if(mode==="vintage"){
+      const nr=0.393*r+0.769*g+0.189*b, ng=0.349*r+0.686*g+0.168*b, nb=0.272*r+0.534*g+0.131*b;
+      r=(nr-128)*1.1+128+n; g=(ng-128)*1.1+128+n; b=(nb-128)*1.1+128+n;
+    }else if(mode==="retro"){
+      r=r*1.1+20+n; g=g*0.95+n; b=b*1.1+10+n;
+      if(y%3===0){r*=0.85;g*=0.85;b*=0.85;}
+    }else{
+      r=r*0.6+n; g=g+20+n; b=b*1.3+30+n;
+      if(y%4===0){r*=0.9;g*=0.9;b*=0.9;}
+    }
+    d[i]=r; d[i+1]=g; d[i+2]=b;
+  }
+  ctx.putImageData(id,0,0);
+  const gr=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.35,w/2,h/2,Math.max(w,h)*0.75);
+  gr.addColorStop(0,"rgba(0,0,0,0)"); gr.addColorStop(1,"rgba(0,0,0,0.55)");
+  ctx.fillStyle=gr; ctx.fillRect(0,0,w,h);
+  showCanvas(cv,$("ttOut"),"time-traveler.png"); st.textContent="Done.";
+};
+
+/* Cartoonizer / sketch */
+$("cartGo").onclick=async()=>{
+  const st=$("cartSt"), f=$("cartFile").files[0];
+  if(!f){st.textContent="Choose a photo first.";return;}
+  let im; try{im=await fileImage(f);}catch(e){st.textContent="Could not read that photo.";return;}
+  const cv=fitCanvas(im,800), ctx=cv.getContext("2d"), w=cv.width, h=cv.height;
+  const id=ctx.getImageData(0,0,w,h), d=id.data;
+  const g=new Float32Array(w*h), e=new Float32Array(w*h);
+  for(let i=0;i<w*h;i++) g[i]=0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2];
+  for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
+    const i=y*w+x;
+    const gx=-g[i-w-1]-2*g[i-1]-g[i+w-1]+g[i-w+1]+2*g[i+1]+g[i+w+1];
+    const gy=-g[i-w-1]-2*g[i-w]-g[i-w+1]+g[i+w-1]+2*g[i+w]+g[i+w+1];
+    e[i]=Math.hypot(gx,gy);
+  }
+  const sketch=$("cartMode").value==="sketch";
+  for(let i=0;i<w*h;i++){
+    const k=i*4;
+    if(sketch){const v=255-Math.min(255,e[i]*1.6); d[k]=v; d[k+1]=v; d[k+2]=v;}
+    else{
+      for(let c=0;c<3;c++){const v=Math.round(d[k+c]/48)*48; d[k+c]=(v-128)*1.15+128;}
+      if(e[i]>110){d[k]*=0.2; d[k+1]*=0.2; d[k+2]*=0.2;}
+    }
+  }
+  ctx.putImageData(id,0,0);
+  showCanvas(cv,$("cartOut"),"cartoon.png"); st.textContent="Done.";
+};
+
+/* Dream fun */
+const DREAMS=[
+ {k:["water","sea","ocean","river","rain","ماء","بحر","نهر","مطر","موج"],
+  en:"Water often stands for feelings in motion. Fun reading: you may be ready to let go of something and flow into a calmer chapter.",
+  ar:"الماء يرمز غالبًا إلى المشاعر المتحركة. قراءة مرحة: ربما أنت مستعد لترك شيء والانتقال إلى فصل أهدأ."},
+ {k:["fly","flying","wings","bird","طير","أطير","اطير","جناح","طائر"],
+  en:"Flying is a playful image of freedom and confidence. Fun reading: a goal feels more reachable than it did yesterday.",
+  ar:"الطيران صورة مرحة للحرية والثقة. قراءة مرحة: هدفك يبدو أقرب مما كان بالأمس."},
+ {k:["fall","falling","سقط","أسقط","اسقط","سقوط"],
+  en:"Falling dreams are common and often mirror a wish for steadier ground. Fun reading: take one small step that makes you feel supported.",
+  ar:"أحلام السقوط شائعة وغالبًا تعكس رغبة في أرض أثبت. قراءة مرحة: خذ خطوة صغيرة تشعرك بالدعم."},
+ {k:["house","home","room","door","بيت","منزل","غرفة","باب"],
+  en:"Houses can represent the self, with rooms as different sides of you. Fun reading: a hidden talent may be ready for a bigger room.",
+  ar:"البيت قد يرمز إلى الذات والغرف إلى جوانبك المختلفة. قراءة مرحة: موهبة خفية قد تكون جاهزة لغرفة أكبر."},
+ {k:["exam","test","school","late","امتحان","اختبار","مدرسة","تأخر"],
+  en:"Test dreams are a classic sign of caring about doing well. Fun reading: you are better prepared than you feel.",
+  ar:"أحلام الامتحان علامة شائعة على الحرص على النجاح. قراءة مرحة: أنت أكثر استعدادًا مما تشعر."},
+ {k:["cat","dog","animal","قط","قطة","كلب","حيوان"],
+  en:"Animals can stand for instincts and companionship. Fun reading: trust your gut on a small decision this week.",
+  ar:"الحيوانات قد ترمز إلى الغريزة والصحبة. قراءة مرحة: ثق بحدسك في قرار صغير هذا الأسبوع."},
+ {k:["teeth","tooth","اسنان","أسنان","سن"],
+  en:"Teeth dreams are very common and often link to feeling self-conscious. Fun reading: a little self-kindness goes a long way today.",
+  ar:"أحلام الأسنان شائعة جدًا وترتبط غالبًا بالانتباه لنظرة الآخرين. قراءة مرحة: القليل من اللطف مع نفسك يفيدك اليوم."},
+ {k:["road","car","travel","train","journey","طريق","سيارة","سفر","قطار","رحلة"],
+  en:"Roads and journeys suggest movement and choices. Fun reading: a new path may open if you take the first turn.",
+  ar:"الطرق والرحلات توحي بالحركة والاختيارات. قراءة مرحة: قد ينفتح طريق جديد إذا خطوت أول منعطف."},
+ {k:["fire","sun","light","نار","شمس","نور","ضوء"],
+  en:"Fire and light often hint at energy and passion. Fun reading: a creative idea is warming up.",
+  ar:"النار والضوء يوحيان بالطاقة والشغف. قراءة مرحة: فكرة إبداعية تتحمّس بداخلك."}
+];
+$("dreamGo").onclick=()=>{
+  const t=$("dreamText").value.toLowerCase().trim(), out=$("dreamOut");
+  if(!t){card(out,tx("Dream Fun","مفسر الأحلام"),[tx("Describe your dream first.","اكتب حلمك أولًا.")]);return;}
+  const hits=DREAMS.filter(s=>s.k.some(w=>t.includes(w))).slice(0,3);
+  const lines=hits.length?hits.map(s=>tx(s.en,s.ar)):[tx("No familiar symbol found. Fun reading: dreams mix the day's memories into stories. Note one detail you liked.","لم أجد رمزًا مألوفًا. قراءة مرحة: الأحلام تمزج ذكريات اليوم في قصص. دوّن تفصيلة أعجبتك.")];
+  card(out,tx("Your dream, playfully","حلمك بشكل مرح"),lines,FUN());
+};
+
+/* Horoscope */
+const HORO={
+ mood:{en:["Sparkling","Calm","Adventurous","Focused","Cheerful","Dreamy"],ar:["متألق","هادئ","مغامر","مركّز","مبتهج","حالم"]},
+ tip:{en:["Say yes to a small new thing today.","A kind word will travel further than you expect.","Take a short walk and let ideas catch up.","Finish one tiny task; it will feel great.","Share something that made you smile.","Tidy one corner; your mind will follow."],
+      ar:["قل نعم لشيء صغير جديد اليوم.","كلمة طيبة ستصل أبعد مما تتوقع.","امشِ قليلًا واترك الأفكار تلحق بك.","أنجز مهمة صغيرة واحدة وسترتاح.","شارك شيئًا أضحكك.","رتّب ركنًا واحدًا وسيتبعك ذهنك."]},
+ signs:{en:["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"],
+        ar:["الحمل","الثور","الجوزاء","السرطان","الأسد","العذراء","الميزان","العقرب","القوس","الجدي","الدلو","الحوت"]}
+};
+$("horoGo").onclick=()=>{
+  const s=parseInt($("horoSign").value,10), lang=gl()==="ar"?"ar":"en";
+  const day=new Date().toISOString().slice(0,10), r=mkRng(hashStr(s+"|"+day));
+  card($("horoOut"),HORO.signs[lang][s]+" · "+day,[
+    tx("Mood: ","المزاج: ")+pickFrom(r,HORO.mood[lang]),
+    tx("Energy: ","الطاقة: ")+(55+Math.floor(r()*45))+"%",
+    tx("Lucky number: ","رقمك المحظوظ: ")+(1+Math.floor(r()*99)),
+    pickFrom(r,HORO.tip[lang])
+  ],FUN());
+};
+
+/* Nicknames and viral titles */
+const NICK={
+ en:{adj:["Turbo","Mega","Super","Cosmic","Sneaky","Legendary"],
+     funny:["Snack Master","Meme Wizard","Nap Champion","Wi-Fi Whisperer","Coffee Ninja","Joke Magnet"],
+     cool:["Shadow Fox","Night Falcon","Steel Wolf","Neon Tiger","Storm Rider","Ice Phoenix"],
+     royal:["Duke","Baron","Emperor","Sultan of Style","Grand Vizier","Majesty of Mischief"]},
+ ar:{funny:["ملك النوم","ساحر الضحك","وزير القهوة","نينجا السناكس","أمير الميمز","خبير الواي فاي"],
+     cool:["الصقر","الذئب الأسود","النمر","الفينيق","فارس العاصفة","الظل"],
+     royal:["السلطان","الأمير","الباشا","الوزير الأعظم","صاحب السمو","الملك"]}
+};
+const TITLES={
+ en:["You won't believe what happened with {t}","5 things about {t} nobody tells you","I tried {t} for 7 days. Here's what happened","{t}: the truth in 60 seconds","Why everyone is talking about {t}","{t} gone wrong (funny edition)"],
+ ar:["مش هتصدق اللي حصل مع {t}","٥ حاجات عن {t} محدش بيقولها","جربت {t} لمدة ٧ أيام والنتيجة مفاجأة","{t}: الحقيقة في ٦٠ ثانية","ليه الكل بيتكلم عن {t}؟","{t} لما يبوظ (نسخة كوميدية)"]
+};
+$("nickGo").onclick=()=>{
+  const n=$("nickName").value.trim(), out=$("nickOut");
+  if(!n){card(out,tx("Nicknames","ألقاب"),[tx("Type a name first.","اكتب اسمًا أولًا.")]);return;}
+  const v=$("nickVibe").value, r=mkRng(Date.now()%100000+hashStr(n)), res=[];
+  for(let i=0;i<5;i++){
+    if(gl()==="ar"){const t=pickFrom(r,NICK.ar[v]); res.push(v==="royal"?t+" "+n:n+" "+t);}
+    else{const t=pickFrom(r,NICK.en[v]); res.push(v==="royal"?t+" "+n:pickFrom(r,NICK.en.adj)+" "+n+" the "+t);}
+  }
+  card(out,tx("Nicknames","ألقاب"),res);
+};
+$("titleGo").onclick=()=>{
+  const t=$("nickTopic").value.trim(), out=$("nickOut");
+  if(!t){card(out,tx("Viral titles","عناوين جذابة"),[tx("Type a topic first.","اكتب موضوعًا أولًا.")]);return;}
+  card(out,tx("Title ideas","أفكار عناوين"),TITLES[gl()==="ar"?"ar":"en"].map(x=>x.replace("{t}",t)));
+};
+
+/* Storyboard */
+$("sbGo").onclick=()=>{
+  const lines=$("sbText").value.split("\n").map(s=>s.trim()).filter(Boolean).slice(0,8);
+  const out=$("sbOut"), st=$("sbSt"); out.innerHTML="";
+  if(!lines.length){st.textContent="Write at least one scene, one per line.";return;}
+  st.textContent=lines.length+" scenes ready. Tap Illustrate on a frame, or Illustrate all.";
+  const style=$("sbStyle").value, seed=hashStr(lines[0])%100000+1, btns=[];
+  lines.forEach((t,i)=>{
+    const c=document.createElement("div"); c.className="reading";
+    const h=document.createElement("h3"); h.textContent="Scene "+(i+1); c.appendChild(h);
+    const p=document.createElement("p"); p.textContent=t; c.appendChild(p);
+    const box=document.createElement("div"), s2=document.createElement("div"); s2.className="status";
+    const b=document.createElement("button"); b.className="btn"; b.textContent="Illustrate";
+    b.onclick=()=>genImage(t+", "+style,1024,576,s2,box,seed);
+    btns.push(b); c.appendChild(b); c.appendChild(s2); c.appendChild(box); out.appendChild(c);
+  });
+  const all=document.createElement("button"); all.className="btn primary"; all.textContent="Illustrate all";
+  all.onclick=()=>btns.forEach((b,i)=>setTimeout(()=>b.click(),i*1500));
+  st.appendChild(document.createElement("br")); st.appendChild(all);
+};
+
+/* Compatibility */
+$("loveGo").onclick=()=>{
+  const a=$("loveA").value.trim(), b=$("loveB").value.trim(), out=$("loveOut");
+  if(!a||!b){card(out,tx("Compatibility","التوافق"),[tx("Enter both names.","اكتب الاسمين.")]);return;}
+  const key=[a.toLowerCase(),b.toLowerCase()].sort().join("|")+$("loveKind").value;
+  const pct=50+hashStr(key)%50, ar=gl()==="ar";
+  const msg=pct<65?tx("A sweet start with lots of room to grow.","بداية لطيفة ومجال كبير للنمو.")
+    :pct<80?tx("Great chemistry. You make each other smile.","كيمياء رائعة. تُضحكان بعضكما.")
+    :tx("A dazzling match. Time for a celebration!","توافق مبهر. وقت الاحتفال!");
+  card(out,a+" + "+b,[(ar?"النسبة: ":"Score: ")+pct+"%",msg],FUN());
+};
+
+/* Meme maker */
+$("memeGo").onclick=async()=>{
+  const f=$("memeFile").files[0]; let cv;
+  if(f){try{cv=fitCanvas(await fileImage(f),900);}catch(e){card($("memeOut"),"Meme",["Could not read that photo."]);return;}}
+  else{cv=document.createElement("canvas");cv.width=900;cv.height=600;const c=cv.getContext("2d");c.fillStyle="#4f46e5";c.fillRect(0,0,900,600);}
+  const ctx=cv.getContext("2d"), w=cv.width, h=cv.height;
+  function line(t,y,base){
+    if(!t) return; t=t.toUpperCase();
+    let s=Math.round(w/10); const font=()=>"bold "+s+"px Impact,'Arial Black',sans-serif";
+    ctx.font=font(); while(s>16&&ctx.measureText(t).width>w-30){s-=2;ctx.font=font();}
+    ctx.textAlign="center"; ctx.textBaseline=base; ctx.lineJoin="round"; ctx.lineWidth=Math.max(4,s/6);
+    ctx.strokeStyle="#000"; ctx.fillStyle="#fff"; ctx.strokeText(t,w/2,y); ctx.fillText(t,w/2,y);
+  }
+  line($("memeTop").value.trim(),12,"top"); line($("memeBot").value.trim(),h-12,"bottom");
+  showCanvas(cv,$("memeOut"),"meme.png");
+};
+
+/* Pet translator */
+const PET={
+ en:["I am not hungry. I am simply reminding you that I exist and you are my favorite human.","A burst of joy has been detected. Please clear the runway.","I'm conducting a gravity experiment. Result: gravity still works.","You are now my official warm chair. Please do not move.","I have a very important meeting with the outside world.","Everything is wonderful and you are part of it."],
+ ar:["أنا مش جعان، بس بفكّرك إني موجود وإنك أحب إنسان عندي.","تم رصد انفجار فرح. من فضلك افتح الممر.","بعمل تجربة جاذبية. النتيجة: الجاذبية لسه شغالة.","إنت دلوقتي كرسيّي الدافي الرسمي. ممنوع تتحرك.","عندي اجتماع مهم جدًا مع العالم الخارجي.","كل حاجة حلوة وإنت جزء منها."]
+};
+$("petGo").onclick=()=>{
+  const n=$("petName").value.trim()||tx("Your pet","حيوانك"), i=parseInt($("petDo").value,10);
+  card($("petOut"),$("petKind").value+" "+n+tx(" says:"," يقول:"),[PET[gl()==="ar"?"ar":"en"][i]],tx("A joke translator, not a real one.","مترجم للمزاح فقط."));
+};
+
+/* Logo maker */
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+$("logoGo").onclick=()=>{
+  const cv=document.createElement("canvas"); cv.width=512; cv.height=512; const c=cv.getContext("2d");
+  const bg=$("logoBg").value, fg=$("logoFg").value, shape=$("logoShape").value, fam=$("logoFont").value;
+  const txt=$("logoText").value.trim()||"Logo", sub=$("logoSub").value.trim();
+  c.fillStyle=bg;
+  if(shape==="circle"){c.beginPath();c.arc(256,256,240,0,Math.PI*2);}
+  else if(shape==="round"){rr(c,16,16,480,480,80);}
+  else{c.beginPath();for(let k=0;k<6;k++){const a=Math.PI/3*k-Math.PI/2,x=256+240*Math.cos(a),y=256+240*Math.sin(a);if(k)c.lineTo(x,y);else c.moveTo(x,y);}c.closePath();}
+  c.fill(); c.save(); c.globalAlpha=0.35; c.strokeStyle=fg; c.lineWidth=10; c.stroke(); c.restore();
+  c.fillStyle=fg; c.textAlign="center"; c.textBaseline="middle";
+  let s=130; const font=()=>"bold "+s+"px "+fam; c.font=font();
+  while(s>28&&c.measureText(txt).width>340){s-=4;c.font=font();}
+  c.fillText(txt,256,sub?230:256);
+  if(sub){let s2=44; const f2=()=>s2+"px "+fam; c.font=f2(); while(s2>16&&c.measureText(sub).width>320){s2-=2;c.font=f2();} c.fillText(sub,256,330);}
+  showCanvas(cv,$("logoOut"),"logo.png");
+};
+
+/* Fitness fun */
+const MOT={
+ en:{move:["Ten minutes of walking still counts. Start with the first step.","Put on a song and move until it ends.","Your future self is cheering for this walk."],
+     strong:["One more steady rep. Good form beats speed.","Strong is built a little at a time.","Breathe, brace, and enjoy the effort."],
+     calm:["Roll your shoulders back and breathe slowly.","Stretch gently. Nothing should hurt.","A calm minute is a win."]},
+ ar:{move:["عشر دقائق مشي تُحسب أيضًا. ابدأ بالخطوة الأولى.","شغّل أغنية وتحرك حتى تنتهي.","نسختك المستقبلية تشجّعك على هذه المشية."],
+     strong:["تكرار ثابت آخر. الأداء الصحيح أهم من السرعة.","القوة تُبنى شيئًا فشيئًا.","تنفّس وتماسك واستمتع بالجهد."],
+     calm:["حرّك كتفيك للخلف وتنفّس ببطء.","تمدّد بلطف. لا يجب أن يؤلمك شيء.","دقيقة هدوء تُعدّ إنجازًا."]}
+};
+$("fitGo").onclick=()=>{
+  const r=mkRng(Date.now()), lang=gl()==="ar"?"ar":"en";
+  card($("fitOut"),tx("Today's boost","دفعة اليوم"),[pickFrom(r,MOT[lang][$("fitKind").value])],tx("General motivation, not medical advice.","تحفيز عام وليس نصيحة طبية."));
+};
+(function(){
+  let timer=null;
+  function beep(){try{const ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();o.frequency.value=880;o.connect(ac.destination);o.start();setTimeout(()=>{o.stop();ac.close();},150);}catch(e){}}
+  $("fitTimer").onclick=()=>{
+    if(timer){clearInterval(timer);timer=null;$("fitClock").textContent="";$("fitTimer").textContent="Start 6 x (30 s work, 10 s rest)";return;}
+    let round=1, work=true, left=30; $("fitTimer").textContent="Stop";
+    const show=()=>{$("fitClock").textContent=(gl()==="ar"?(work?"عمل":"راحة"):(work?"WORK":"REST"))+" "+left+"s · "+round+"/6";};
+    show();
+    timer=setInterval(()=>{
+      left--;
+      if(left<=0){
+        beep();
+        if(work){work=false;left=10;if(round===6){clearInterval(timer);timer=null;$("fitClock").textContent=tx("Done! Great effort.","انتهينا! مجهود رائع.");$("fitTimer").textContent="Start 6 x (30 s work, 10 s rest)";return;}}
+        else{work=true;left=30;round++;}
+      }
+      show();
+    },1000);
+  };
+})();
+
+/* Trivia */
+const QZ=[
+ {en:{q:"What is the capital of Egypt?",o:["Cairo","Alexandria","Giza","Luxor"]},ar:{q:"ما عاصمة مصر؟",o:["القاهرة","الإسكندرية","الجيزة","الأقصر"]},a:0},
+ {en:{q:"Which is the largest planet in our solar system?",o:["Mars","Jupiter","Earth","Venus"]},ar:{q:"ما أكبر كواكب المجموعة الشمسية؟",o:["المريخ","المشتري","الأرض","الزهرة"]},a:1},
+ {en:{q:"How many continents are there?",o:["5","6","7","8"]},ar:{q:"كم عدد قارات العالم؟",o:["5","6","7","8"]},a:2},
+ {en:{q:"Which river flows through Egypt?",o:["Euphrates","Nile","Amazon","Danube"]},ar:{q:"أي نهر يجري في مصر؟",o:["الفرات","النيل","الأمازون","الدانوب"]},a:1},
+ {en:{q:"What is the chemical formula of water?",o:["CO2","O2","H2O","NaCl"]},ar:{q:"ما الصيغة الكيميائية للماء؟",o:["CO2","O2","H2O","NaCl"]},a:2},
+ {en:{q:"Which is the largest ocean?",o:["Atlantic","Indian","Arctic","Pacific"]},ar:{q:"ما أكبر محيطات العالم؟",o:["الأطلسي","الهندي","المتجمد الشمالي","الهادئ"]},a:3},
+ {en:{q:"How many sides does a hexagon have?",o:["5","6","7","8"]},ar:{q:"كم عدد أضلاع السداسي؟",o:["5","6","7","8"]},a:1},
+ {en:{q:"Who painted the Mona Lisa?",o:["Picasso","Van Gogh","Leonardo da Vinci","Michelangelo"]},ar:{q:"من رسم الموناليزا؟",o:["بيكاسو","فان جوخ","ليوناردو دا فينشي","مايكل أنجلو"]},a:2}
+];
+$("quizGo").onclick=()=>{
+  let i=0, score=0; const lang=gl()==="ar"?"ar":"en", q=$("quizQ"), o=$("quizOpts"), st=$("quizSt");
+  q.dir=o.dir=lang==="ar"?"rtl":"ltr"; st.textContent="";
+  function show(){
+    if(i>=QZ.length){q.textContent=tx("Finished!","انتهى التحدي!");o.innerHTML="";st.textContent=tx("Score: ","النتيجة: ")+score+"/"+QZ.length;return;}
+    const item=QZ[i][lang]; q.textContent=(i+1)+". "+item.q; o.innerHTML="";
+    item.o.forEach((t,idx)=>{
+      const b=document.createElement("button"); b.className="btn"; b.textContent=t;
+      b.onclick=()=>{
+        Array.from(o.children).forEach(x=>x.disabled=true);
+        if(idx===QZ[i].a){score++;b.classList.add("ok");}else{b.classList.add("no");o.children[QZ[i].a].classList.add("ok");}
+        setTimeout(()=>{i++;show();},900);
+      };
+      o.appendChild(b);
+    });
+  }
+  show();
+};
+
+/* Voice fun */
+(function(){
+  let rec=null, stream=null, chunks=[], buf=null, ac=null, timer=null;
+  const AC=window.AudioContext||window.webkitAudioContext, st=$("vSt");
+  function wav(b){
+    const d=b.getChannelData(0), n=d.length, sr=b.sampleRate, ab=new ArrayBuffer(44+n*2), v=new DataView(ab);
+    const ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+    ws(0,"RIFF");v.setUint32(4,36+n*2,true);ws(8,"WAVE");ws(12,"fmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+    v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);ws(36,"data");v.setUint32(40,n*2,true);
+    for(let i=0;i<n;i++){const s=Math.max(-1,Math.min(1,d[i]));v.setInt16(44+i*2,s<0?s*0x8000:s*0x7FFF,true);}
+    return new Blob([ab],{type:"audio/wav"});
+  }
+  async function render(b,fx){
+    const rate=fx==="chip"?1.5:fx==="deep"?0.75:1, len=Math.ceil(b.length/rate);
+    const oc=new OfflineAudioContext(1,len,b.sampleRate), src=oc.createBufferSource();
+    src.buffer=b; src.playbackRate.value=rate; let node=src;
+    if(fx==="robot"){const g=oc.createGain();g.gain.value=0;const os=oc.createOscillator();os.frequency.value=40;os.connect(g.gain);src.connect(g);node=g;os.start();}
+    node.connect(oc.destination); src.start();
+    return oc.startRendering();
+  }
+  $("vRec").onclick=async()=>{
+    if(rec&&rec.state==="recording"){rec.stop();return;}
+    if(!navigator.mediaDevices||!window.MediaRecorder||!AC){st.textContent="This browser can't record audio here.";return;}
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+    catch(e){st.textContent="Microphone access was blocked. Allow it in your browser settings.";return;}
+    chunks=[]; rec=new MediaRecorder(stream);
+    rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};
+    rec.onstop=async()=>{
+      clearTimeout(timer); stream.getTracks().forEach(t=>t.stop()); $("vRec").textContent="Record";
+      try{ac=ac||new AC(); buf=await ac.decodeAudioData(await new Blob(chunks).arrayBuffer()); st.textContent="Recorded "+buf.duration.toFixed(1)+" s. Pick an effect and press Play.";}
+      catch(e){buf=null; st.textContent="Could not read the recording.";}
+    };
+    rec.start(); $("vRec").textContent="Stop"; st.textContent="Recording (max 8 s)...";
+    timer=setTimeout(()=>{if(rec&&rec.state==="recording")rec.stop();},8000);
+  };
+  $("vPlay").onclick=async()=>{
+    if(!buf){st.textContent="Record something first.";return;}
+    try{
+      const out=await render(buf,$("vFx").value);
+      ac=ac||new AC(); if(ac.state==="suspended") await ac.resume();
+      const s=ac.createBufferSource(); s.buffer=out; s.connect(ac.destination); s.start();
+      const dl=$("vDl"); dl.href=URL.createObjectURL(wav(out)); dl.download="voice-fun.wav"; dl.style.display="inline-block";
+    }catch(e){st.textContent="Could not play the effect in this browser.";}
+  };
+})();
+
+/* Greeting cards */
+const GREET={
+ eid:{en:"Eid Mubarak",ar:"عيد مبارك"}, ram:{en:"Ramadan Kareem",ar:"رمضان كريم"},
+ bday:{en:"Happy Birthday",ar:"عيد ميلاد سعيد",fr:"Joyeux anniversaire",de:"Alles Gute zum Geburtstag",zh:"生日快乐"},
+ ny:{en:"Happy New Year",ar:"سنة جديدة سعيدة",fr:"Bonne année",de:"Frohes neues Jahr",zh:"新年快乐"},
+ cong:{en:"Congratulations",ar:"ألف مبروك",fr:"Félicitations",de:"Herzlichen Glückwunsch",zh:"恭喜"},
+ thx:{en:"Thank You",ar:"شكرًا لك",fr:"Merci",de:"Danke",zh:"谢谢"}
+};
+const DECO={eid:"🌙✨",ram:"🌙🏮",bday:"🎂🎉",ny:"🎆✨",cong:"🎉🏆",thx:"💐🙏"};
+const THEMES=[["#4f46e5","#9333ea"],["#0f766e","#14b8a6"],["#b45309","#f59e0b"],["#be123c","#fb7185"]];
+$("cardGo").onclick=()=>{
+  const occ=$("cardOcc").value, lang=$("cardLang").value, name=$("cardName").value.trim();
+  const msg=GREET[occ][lang]||GREET[occ].en, th=THEMES[parseInt($("cardTheme").value,10)];
+  const cv=document.createElement("canvas"); cv.width=1000; cv.height=640; const c=cv.getContext("2d");
+  const g=c.createLinearGradient(0,0,1000,640); g.addColorStop(0,th[0]); g.addColorStop(1,th[1]); c.fillStyle=g; c.fillRect(0,0,1000,640);
+  c.strokeStyle="rgba(255,255,255,0.6)"; c.lineWidth=6; c.strokeRect(24,24,952,592);
+  c.textAlign="center"; c.textBaseline="middle"; c.fillStyle="#fff";
+  c.font="90px serif"; c.fillText(DECO[occ],500,120); c.fillText(DECO[occ],500,540);
+  let s=110; const font=()=>"bold "+s+"px Tahoma,Arial,sans-serif"; c.font=font();
+  while(s>30&&c.measureText(msg).width>860){s-=4;c.font=font();}
+  c.fillText(msg,500,name?290:320);
+  if(name){let s2=56; const f2=()=>s2+"px Tahoma,Arial,sans-serif"; c.font=f2(); while(s2>20&&c.measureText(name).width>860){s2-=2;c.font=f2();} c.fillText(name,500,400);}
+  showCanvas(cv,$("cardOut"),"greeting-card.png");
+};
+/* AI video (needs the local server started with --video-model) */
+function videoNote(){
+  const n=$("avNote"); if(!n) return;
+  n.textContent=CONFIG.VIDEO
+    ?tx("Local AI video is ready. A clip can take several minutes. Use generic equipment, no brand names or logos.","فيديو الذكاء الاصطناعي المحلي جاهز. قد يستغرق المقطع عدة دقائق. استخدم معدات عامة بدون أسماء علامات أو شعارات.")
+    :tx("AI video needs the local server started with --video-model (see README_LOCAL.md).","فيديو الذكاء الاصطناعي يحتاج تشغيل الخادم المحلي مع --video-model (راجع README_LOCAL.md).");
+}
+(function(){
+  const go=$("avGo"), st=$("avSt"), out=$("avOut"), meter=$("avMeter"), bar=$("avBar");
+  let busy=false;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  go.addEventListener("click",async()=>{
+    if(busy) return;
+    if(!CONFIG.VIDEO){videoNote(); st.textContent=$("avNote").textContent; return;}
+    const prompt=[$("avPreset").value,$("avPrompt").value.trim()].filter(Boolean).join(", ");
+    if(!prompt){st.textContent=tx("Pick a scene or describe the video first.","اختر مشهدًا أو اكتب وصف الفيديو أولًا.");return;}
+    if(blocked(prompt)){st.textContent=tx("This prompt names a protected character or brand. Describe your idea in your own words instead.","هذا الوصف يذكر شخصية أو علامة محمية. صف فكرتك بكلماتك.");return;}
+    busy=true; go.disabled=true; out.innerHTML=""; meter.style.display="block"; bar.style.width="0%";
+    st.textContent=tx("Sending to your local model...","جارٍ الإرسال إلى نموذجك المحلي...");
+    try{
+      const r=await fetch("/video/start",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({prompt,seconds:parseInt($("avSec").value,10),seed:Math.floor(Math.random()*1e6)+1})});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(j.error||("Server error "+r.status));
+      for(;;){
+        await sleep(2000);
+        const s=await (await fetch("/video/status?id="+encodeURIComponent(j.id),{cache:"no-store"})).json();
+        if(s.state==="error") throw new Error(s.error||"failed");
+        if(s.state==="done"){
+          bar.style.width="100%"; st.textContent=tx("Done.","تم.");
+          const url="/video/result?id="+encodeURIComponent(j.id);
+          const v=document.createElement("video"); v.src=url; v.controls=true; v.playsInline=true; v.loop=true;
+          const a=document.createElement("a"); a.href=url; a.download="ai-video"+(s.ext||".mp4"); a.className="btn primary";
+          a.textContent=tx("Download video","تنزيل الفيديو"); a.style.display="inline-block"; a.style.marginTop="10px";
+          out.appendChild(v); out.appendChild(a); break;
+        }
+        const pct=Math.round((s.progress||0)*100); bar.style.width=pct+"%";
+        st.textContent=s.state==="queued"
+          ?tx("Waiting in line (","في الانتظار (")+(s.queue_ahead||0)+tx(" ahead)"," قبلك)")
+          :tx("Rendering... ","جارٍ التوليد... ")+pct+"%";
+      }
+    }catch(e){
+      st.textContent=(e instanceof TypeError)
+        ?tx("Cannot reach the local server. Is its window still open?","لا يمكن الوصول إلى الخادم المحلي. هل نافذته ما زالت مفتوحة؟")
+        :tx("Video failed: ","فشل الفيديو: ")+e.message;
+    }finally{busy=false; go.disabled=false; meter.style.display="none";}
+  });
+})();
+/* Auto-detect the local model server (same address only, so visitors' browsers never probe their own machines). */
+(function(){
+  if(!window.fetch) return;
+  const n=document.getElementById("engineNote");
+  const online=()=>{if(n) n.textContent=tx("Images are generated by an online service.","يتم توليد الصور عبر خدمة على الإنترنت.");};
+  fetch("/health",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{
+    CONFIG.VIDEO=!!(j&&j.video);
+    if(j&&j.local_model){
+      CONFIG.IMAGE_URL=CONFIG.LOCAL_IMAGE_URL; CONFIG.LOCAL=true;
+      if(n) n.textContent=tx("Using your local model: ","تستخدم نموذجك المحلي: ")+j.model
+        +(j.mock?tx(" (test mode: gradients only)"," (وضع تجريبي: تدرجات لونية فقط)"):"")+" · "+j.device
+        +(j.translate?tx(". Arabic prompts are translated to English automatically.","، وتُترجم الأوامر العربية إلى الإنجليزية تلقائيًا."):"")
+        +(j.video?tx(" AI video: "," الفيديو: ")+j.video_model:"");
+    }else if(j&&j.video){
+      if(n) n.textContent=tx("AI video: ","الفيديو: ")+j.video_model+tx(" · Images: online service."," · الصور: خدمة على الإنترنت.");
+    }else online();
+    videoNote();
+  }).catch(()=>{online();videoNote();});
+})();
+</script>
+</body>
+</html>
